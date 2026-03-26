@@ -1,14 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitTrack - Your Personal Fitness Companion</title>
+    
+    <!-- PWA Manifest & App Defaults -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0A0E27">
+    <link rel="apple-touch-icon" href="https://www.svgrepo.com/show/361622/fitness.svg">
+    
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -21,7 +35,7 @@
                 <span class="icon">📊</span>
                 <span>Dashboard</span>
             </button>
-            <button class="nav-btn" data-page="goals">
+            <button class="nav-btn" data-page="goals" style="display:none;" id="goalsNavBtn">
                 <span class="icon">🎯</span>
                 <span>Goals</span>
             </button>
@@ -37,6 +51,14 @@
                 <span class="icon">📈</span>
                 <span>Health Metrics</span>
             </button>
+            <button class="nav-btn" data-page="profile">
+                <span class="icon">👤</span>
+                <span>Profile</span>
+            </button>
+            <button class="nav-btn logout-btn" id="logoutBtn" style="display: none;">
+                <span class="icon">🚪</span>
+                <span>Logout</span>
+            </button>
         </div>
     </nav>
 
@@ -50,6 +72,15 @@
             </div>
 
             <div class="stats-grid">
+                <div class="stat-card" style="border-color: #FFD23F; background: rgba(255, 210, 63, 0.05);">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Current Streak</div>
+                        <div class="stat-value" id="currentStreak" style="color: #FFD23F;">0</div>
+                        <div class="stat-unit">days</div>
+                    </div>
+                </div>
+
                 <div class="stat-card gradient-1">
                     <div class="stat-icon">🔥</div>
                     <div class="stat-content">
@@ -87,6 +118,13 @@
                 </div>
             </div>
 
+            <div class="chart-container" style="background: var(--bg-card); padding: var(--spacing-lg); border-radius: var(--radius-lg); border: 2px solid var(--border); margin-bottom: var(--spacing-xl);">
+                <h2 class="section-title" style="font-size: 1.2rem; color: var(--text-secondary);">7-Day Calorie Trends 📈</h2>
+                <div style="position: relative; height: 30vh; width: 100%;">
+                    <canvas id="calorieChart"></canvas>
+                </div>
+            </div>
+
             <div class="dashboard-content">
                 <div class="goal-card">
                     <h2 class="section-title">Your Current Goal 🎯</h2>
@@ -97,6 +135,20 @@
                             <button class="btn btn-primary" onclick="navigateTo('goals')">Set Your Goal</button>
                         </div>
                     </div>
+                    <!-- Goal Progress Bar (hidden until goal is set) -->
+                    <div id="goalProgressContainer" style="display:none; margin-top: 1.5rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                            <span style="color:var(--text-secondary); font-size:0.9rem;">Progress to Target Date</span>
+                            <span id="goalProgressPct" style="color:var(--accent); font-weight:700;">0%</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.08); border-radius:999px; height:10px; overflow:hidden;">
+                            <div id="goalProgressBar" style="height:100%; background: var(--gradient-1); border-radius:999px; width:0%; transition: width 0.6s ease;"></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:0.4rem; font-size:0.8rem; color:var(--text-secondary);">
+                            <span id="goalDaysLeft"></span>
+                            <span id="goalTargetDate"></span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="recent-workouts">
@@ -105,58 +157,15 @@
                         <div class="empty-state">
                             <div class="empty-icon">🏋️</div>
                             <p>No workouts logged yet. Let's get started!</p>
-                            <button class="btn btn-primary" onclick="navigateTo('workout')">Log Your First Workout</button>
+                            <button class="btn btn-primary" onclick="navigateTo('workout')">Log Your First
+                                Workout</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Goals Page -->
-        <section id="goals" class="page">
-            <div class="page-header">
-                <h1 class="page-title">Set Your Fitness Goals 🎯</h1>
-                <p class="page-subtitle">Define what you want to achieve</p>
-            </div>
 
-            <div class="form-container">
-                <form id="goalForm" class="fitness-form">
-                    <div class="form-group">
-                        <label for="goalType">Goal Type</label>
-                        <select id="goalType" required>
-                            <option value="">Select your goal...</option>
-                            <option value="weight-loss">Weight Loss</option>
-                            <option value="muscle-gain">Muscle Gain</option>
-                            <option value="maintain">Maintain Weight</option>
-                            <option value="endurance">Build Endurance</option>
-                            <option value="flexibility">Improve Flexibility</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="targetWeightGroup" style="display: none;">
-                        <label for="targetWeight">Target Weight (kg)</label>
-                        <input type="number" id="targetWeight" placeholder="Enter target weight" step="0.1" min="30" max="200">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="targetDate">Target Date</label>
-                        <input type="date" id="targetDate" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="weeklyWorkouts">Weekly Workout Frequency</label>
-                        <input type="number" id="weeklyWorkouts" placeholder="How many days per week?" min="1" max="7" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="notes">Additional Notes (Optional)</label>
-                        <textarea id="notes" rows="4" placeholder="Any specific targets or motivations..."></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-large">Save Goal</button>
-                </form>
-            </div>
-        </section>
 
         <!-- Log Workout Page -->
         <section id="workout" class="page">
@@ -222,19 +231,24 @@
                 <p class="page-subtitle">Review your fitness journey</p>
             </div>
 
-            <div class="history-controls">
-                <div class="filter-group">
+            <div class="history-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div class="filter-group" style="display: flex; align-items: center; gap: 1rem;">
                     <label for="filterCategory">Filter by Category:</label>
-                    <select id="filterCategory">
+                    <select id="filterCategory" style="min-width: 200px;">
                         <option value="all">All Categories</option>
                         <option value="cardio">Cardio</option>
-                        <option value="strength">Strength Training</option>
-                        <option value="flexibility">Flexibility & Yoga</option>
-                        <option value="sports">Sports & Activities</option>
-                        <option value="dance">Dance & Aerobics</option>
+                        <option value="strength">Strength</option>
+                        <option value="flexibility">Flexibility</option>
+                        <option value="sports">Sports</option>
+                        <option value="dance">Dance</option>
                     </select>
                 </div>
-                <button class="btn btn-danger" onclick="clearAllWorkouts()">Clear All History</button>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="exportCsvBtn" onclick="exportToCsv()" class="btn btn-primary" style="background: var(--success); border-color: var(--success);">
+                        <span class="icon">📥</span> Download CSV
+                    </button>
+                    <button class="btn btn-danger" onclick="clearAllWorkouts()">Clear All History</button>
+                </div>
             </div>
 
             <div id="workoutHistory" class="workout-history-list">
@@ -258,12 +272,14 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="weight">Weight (kg)</label>
-                                <input type="number" id="weight" placeholder="Your weight" step="0.1" min="30" max="300" required>
+                                <input type="number" id="weight" placeholder="Your weight" step="0.1" min="30" max="300"
+                                    required>
                             </div>
 
                             <div class="form-group">
                                 <label for="height">Height (cm)</label>
-                                <input type="number" id="height" placeholder="Your height" step="0.1" min="100" max="250" required>
+                                <input type="number" id="height" placeholder="Your height" step="0.1" min="100"
+                                    max="250" required>
                             </div>
                         </div>
 
@@ -295,7 +311,8 @@
                             <div class="bmi-label">BMI</div>
                         </div>
                         <div class="bmi-info">
-                            <div class="bmi-category-display" id="bmiCategoryDisplay">Enter your metrics to calculate BMI</div>
+                            <div class="bmi-category-display" id="bmiCategoryDisplay">Enter your metrics to calculate
+                                BMI</div>
                             <div class="bmi-description" id="bmiDescription"></div>
                         </div>
                     </div>
@@ -323,13 +340,190 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="bmi-display" style="margin-top: 2rem;">
+                    <h2 class="section-title">Basal Metabolic Rate (BMR) & Targets</h2>
+                    <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                            <span style="color: var(--text-light); font-size: 1.1rem;">BMR (Calories burned at rest)</span>
+                            <span id="bmrValue" style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">-- kcal</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-light); font-size: 1.1rem;">TDEE (Maintenance Target)</span>
+                            <span id="tdeeValue" style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">-- kcal</span>
+                        </div>
+                        <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); text-align: center;">Values calculated using the Mifflin-St Jeor equation based on your personal metrics.</p>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- Profile Page -->
+        <section id="profile" class="page">
+            <div class="page-header">
+                <h1 class="page-title">My Profile &amp; Goals 👤</h1>
+                <p class="page-subtitle">Manage your account, weight, and fitness goals</p>
+            </div>
+
+            <!-- Account Info Card -->
+            <div style="background:var(--bg-card); border-radius:var(--radius-lg); border:1px solid var(--border); padding:var(--spacing-lg); margin-bottom:var(--spacing-lg);">
+                <h2 class="section-title" style="margin-bottom:1.5rem;">Account Info</h2>
+                <form id="profileForm" class="fitness-form">
+                    <div style="display:flex; align-items:center; gap:1.5rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+                        <div id="profileAvatar" style="width:70px; height:70px; border-radius:50%; background:var(--gradient-1); display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:700; color:#fff; border:3px solid var(--primary); flex-shrink:0;">?</div>
+                        <div>
+                            <div id="profileEmail" style="color:var(--text-secondary); font-size:0.9rem;">Loading...</div>
+                            <div style="color:var(--text-secondary); font-size:0.8rem; margin-top:0.25rem;">Supabase account</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileDisplayName">Display Name</label>
+                        <input type="text" id="profileDisplayName" placeholder="How should we call you?" maxlength="30">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Name</button>
+                </form>
+            </div>
+
+            <!-- Fitness Goals Card -->
+            <div style="background:var(--bg-card); border-radius:var(--radius-lg); border:1px solid var(--border); padding:var(--spacing-lg);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <h2 class="section-title" style="margin-bottom:0;">Fitness Goals 🎯</h2>
+                    <button type="button" id="editGoalBtn" onclick="toggleGoalForm()" style="display:none; background:none; border:1px solid var(--border); color:var(--text-secondary); padding:0.4rem 1rem; border-radius:var(--radius-sm); cursor:pointer; font-size:0.85rem;">✏️ Update Goal</button>
+                </div>
+                <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1.5rem;">Set once — your goals always show on your Dashboard.</p>
+
+                <!-- Goal Summary View (shown when goal is saved) -->
+                <div id="goalSummaryView" style="display:none;">
+                    <div id="goalSummaryContent" style="background:rgba(255,255,255,0.03); border-radius:var(--radius-md); border:1px solid var(--border); padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem;"></div>
+                </div>
+
+                <!-- Goal Form (shown when no goal yet, or when editing) -->
+                <form id="goalForm" class="fitness-form">
+                    <div class="form-group">
+                        <label for="goalType">Goal Type</label>
+                        <select id="goalType" required>
+                            <option value="">Select your goal...</option>
+                            <option value="weight-loss">Weight Loss</option>
+                            <option value="muscle-gain">Muscle Gain</option>
+                            <option value="maintain">Maintain Weight</option>
+                            <option value="endurance">Build Endurance</option>
+                            <option value="flexibility">Improve Flexibility</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="targetWeightGroup" style="display:none;">
+                        <label for="targetWeight">Target Weight (kg)</label>
+                        <input type="number" id="targetWeight" placeholder="Enter target weight" step="0.1" min="30" max="200">
+                    </div>
+
+                    <!-- Current Weight sub-option -->
+                    <div class="form-group" id="currentWeightGroup" style="display:none;">
+                        <label for="currentWeight">Current Weight (kg) <span style="color:var(--text-secondary); font-size:0.8rem; font-weight:400;">— update regularly to track progress</span></label>
+                        <input type="number" id="currentWeight" placeholder="e.g. 75.5" step="0.1" min="30" max="300">
+                        <div id="weightProgressDisplay" style="display:none; margin-top:1rem; padding:1rem; background:rgba(255,255,255,0.03); border-radius:var(--radius-md); border:1px solid var(--border);">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                                <span style="color:var(--text-secondary); font-size:0.9rem;">Weight Progress</span>
+                                <span id="weightProgressPct" style="color:var(--accent); font-weight:700;">0%</span>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.08); border-radius:999px; height:10px; overflow:hidden;">
+                                <div id="weightProgressBar" style="height:100%; background:var(--gradient-2); border-radius:999px; width:0%; transition:width 0.6s ease;"></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-top:0.4rem; font-size:0.8rem; color:var(--text-secondary);">
+                                <span id="weightProgressLabel"></span>
+                                <span id="weightTargetLabel"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetDate">Target Date</label>
+                        <input type="date" id="targetDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="weeklyWorkouts">Weekly Workout Frequency</label>
+                        <input type="number" id="weeklyWorkouts" placeholder="Days per week" min="1" max="7" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes (Optional)</label>
+                        <textarea id="notes" rows="3" placeholder="Any specific targets or motivations..."></textarea>
+                    </div>
+                    <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                        <button type="submit" class="btn btn-primary btn-large">Save Goal</button>
+                        <button type="button" id="cancelGoalEdit" onclick="toggleGoalForm()" style="display:none;" class="btn" style="background:none; border:1px solid var(--border);">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
     </main>
+
+    <!-- Edit Workout Modal -->
+    <div id="editWorkoutModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; display:none; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); border-radius:var(--radius-lg); padding:2rem; width:90%; max-width:500px; border:1px solid var(--border); position:relative;">
+            <button onclick="closeEditModal()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-secondary); font-size:1.5rem; cursor:pointer;">✕</button>
+            <h2 style="margin-bottom:1.5rem;">Edit Workout ✏️</h2>
+            <form id="editWorkoutForm" class="fitness-form">
+                <input type="hidden" id="editWorkoutId">
+                <div class="form-group">
+                    <label for="editDuration">Duration (minutes)</label>
+                    <input type="number" id="editDuration" min="1" max="300" required>
+                </div>
+                <div class="form-group">
+                    <label for="editIntensity">Intensity</label>
+                    <select id="editIntensity" required>
+                        <option value="light">Light</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="vigorous">Vigorous</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDate">Date</label>
+                    <input type="date" id="editDate" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-large" style="margin-top:1rem;">Save Changes</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
+    <!-- Auth Modal Overlay -->
+    <div id="authModal" class="auth-modal-overlay">
+        <div class="auth-modal">
+            <div class="auth-header">
+                <div class="logo-icon modal-logo">💪</div>
+                <h2>Welcome to FitTrack</h2>
+                <p>Sign in or create an account to start tracking.</p>
+            </div>
+            <form id="authForm" class="fitness-form" style="margin-top: 2rem;">
+                <div class="form-group">
+                    <label for="authEmail">Email</label>
+                    <input type="email" id="authEmail" required placeholder="your.email@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="authPassword">Password</label>
+                    <input type="password" id="authPassword" required placeholder="Minimum 6 characters">
+                </div>
+                <div class="auth-actions" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary btn-large" id="authSubmitBtn">Sign In</button>
+
+                    <div class="auth-toggle" style="text-align: center; font-size: 0.9rem; color: var(--text-light);">
+                        <span id="authToggleText">Need an account? </span>
+                        <button type="button" id="authToggleBtn"
+                            style="background:none; border:none; color:var(--primary-color); font-weight:600; cursor:pointer;">Sign
+                            Up</button>
+                    </div>
+                    <div style="text-align: center; margin-top: -0.5rem;">
+                        <button type="button" id="forgotPasswordBtn"
+                            style="background:none; border:none; color:var(--text-secondary); font-size: 0.85rem; cursor:pointer; text-decoration: underline;">FORGOT
+                            PASSWORD</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
+
 </html>
