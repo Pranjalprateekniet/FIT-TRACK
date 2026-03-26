@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack - Your Personal Fitness Companion</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo-icon">💪</div>
+            <span class="logo-text">FitTrack</span>
+        </div>
+        <div class="nav-menu">
+            <button class="nav-btn active" data-page="dashboard">
+                <span class="icon">📊</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-btn" data-page="goals">
+                <span class="icon">🎯</span>
+                <span>Goals</span>
+            </button>
+            <button class="nav-btn" data-page="workout">
+                <span class="icon">🏋️</span>
+                <span>Log Workout</span>
+            </button>
+            <button class="nav-btn" data-page="history">
+                <span class="icon">📝</span>
+                <span>History</span>
+            </button>
+            <button class="nav-btn" data-page="metrics">
+                <span class="icon">📈</span>
+                <span>Health Metrics</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Dashboard Page -->
+        <section id="dashboard" class="page active">
+            <div class="page-header">
+                <h1 class="page-title">Welcome Back, <span id="userName">Fitness Enthusiast</span>! 🔥</h1>
+                <p class="page-subtitle">Here's your fitness journey overview</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card gradient-1">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Calories Burned</div>
+                        <div class="stat-value" id="totalCalories">0</div>
+                        <div class="stat-unit">kcal</div>
+                    </div>
+                </div>
+
+                <div class="stat-card gradient-2">
+                    <div class="stat-icon">💪</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Workouts Completed</div>
+                        <div class="stat-value" id="totalWorkouts">0</div>
+                        <div class="stat-unit">sessions</div>
+                    </div>
+                </div>
+
+                <div class="stat-card gradient-3">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Time Exercised</div>
+                        <div class="stat-value" id="totalDuration">0</div>
+                        <div class="stat-unit">minutes</div>
+                    </div>
+                </div>
+
+                <div class="stat-card gradient-4">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Current BMI</div>
+                        <div class="stat-value" id="currentBMI">--</div>
+                        <div class="stat-unit" id="bmiCategory">Not Set</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="goal-card">
+                    <h2 class="section-title">Your Current Goal 🎯</h2>
+                    <div id="goalDisplay">
+                        <div class="empty-state">
+                            <div class="empty-icon">🎯</div>
+                            <p>No goal set yet. Start by setting your fitness goal!</p>
+                            <button class="btn btn-primary" onclick="navigateTo('goals')">Set Your Goal</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-workouts">
+                    <h2 class="section-title">Recent Workouts 💪</h2>
+                    <div id="recentWorkoutsList">
+                        <div class="empty-state">
+                            <div class="empty-icon">🏋️</div>
+                            <p>No workouts logged yet. Let's get started!</p>
+                            <button class="btn btn-primary" onclick="navigateTo('workout')">Log Your First Workout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Goals Page -->
+        <section id="goals" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Set Your Fitness Goals 🎯</h1>
+                <p class="page-subtitle">Define what you want to achieve</p>
+            </div>
+
+            <div class="form-container">
+                <form id="goalForm" class="fitness-form">
+                    <div class="form-group">
+                        <label for="goalType">Goal Type</label>
+                        <select id="goalType" required>
+                            <option value="">Select your goal...</option>
+                            <option value="weight-loss">Weight Loss</option>
+                            <option value="muscle-gain">Muscle Gain</option>
+                            <option value="maintain">Maintain Weight</option>
+                            <option value="endurance">Build Endurance</option>
+                            <option value="flexibility">Improve Flexibility</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="targetWeightGroup" style="display: none;">
+                        <label for="targetWeight">Target Weight (kg)</label>
+                        <input type="number" id="targetWeight" placeholder="Enter target weight" step="0.1" min="30" max="200">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetDate">Target Date</label>
+                        <input type="date" id="targetDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weeklyWorkouts">Weekly Workout Frequency</label>
+                        <input type="number" id="weeklyWorkouts" placeholder="How many days per week?" min="1" max="7" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Additional Notes (Optional)</label>
+                        <textarea id="notes" rows="4" placeholder="Any specific targets or motivations..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-large">Save Goal</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Log Workout Page -->
+        <section id="workout" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Log Your Workout 🏋️</h1>
+                <p class="page-subtitle">Track your exercise and burn those calories!</p>
+            </div>
+
+            <div class="form-container">
+                <form id="workoutForm" class="fitness-form">
+                    <div class="form-group">
+                        <label for="workoutCategory">Exercise Category</label>
+                        <select id="workoutCategory" required>
+                            <option value="">Choose category...</option>
+                            <option value="cardio">🏃 Cardio</option>
+                            <option value="strength">💪 Strength Training</option>
+                            <option value="flexibility">🧘 Flexibility & Yoga</option>
+                            <option value="sports">⚽ Sports & Activities</option>
+                            <option value="dance">💃 Dance & Aerobics</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="exerciseSelectGroup" style="display: none;">
+                        <label for="exerciseName">Select Exercise</label>
+                        <select id="exerciseName" required>
+                            <option value="">Choose exercise...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">Duration (minutes)</label>
+                        <input type="number" id="duration" placeholder="How many minutes?" min="1" max="300" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="intensity">Intensity Level</label>
+                        <select id="intensity" required>
+                            <option value="light">Light (Easy pace)</option>
+                            <option value="moderate">Moderate (Normal pace)</option>
+                            <option value="vigorous">Vigorous (High intensity)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="workoutDate">Date</label>
+                        <input type="date" id="workoutDate" required>
+                    </div>
+
+                    <div class="calorie-estimate" id="calorieEstimate" style="display: none;">
+                        <div class="estimate-label">Estimated Calories Burned:</div>
+                        <div class="estimate-value" id="estimatedCalories">0 kcal</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-large">Log Workout</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- History Page -->
+        <section id="history" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Workout History 📝</h1>
+                <p class="page-subtitle">Review your fitness journey</p>
+            </div>
+
+            <div class="history-controls">
+                <div class="filter-group">
+                    <label for="filterCategory">Filter by Category:</label>
+                    <select id="filterCategory">
+                        <option value="all">All Categories</option>
+                        <option value="cardio">Cardio</option>
+                        <option value="strength">Strength Training</option>
+                        <option value="flexibility">Flexibility & Yoga</option>
+                        <option value="sports">Sports & Activities</option>
+                        <option value="dance">Dance & Aerobics</option>
+                    </select>
+                </div>
+                <button class="btn btn-danger" onclick="clearAllWorkouts()">Clear All History</button>
+            </div>
+
+            <div id="workoutHistory" class="workout-history-list">
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <p>No workout history yet. Start logging your workouts!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Health Metrics Page -->
+        <section id="metrics" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Health Metrics 📈</h1>
+                <p class="page-subtitle">Track your body measurements and progress</p>
+            </div>
+
+            <div class="metrics-container">
+                <div class="form-container">
+                    <form id="metricsForm" class="fitness-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="weight">Weight (kg)</label>
+                                <input type="number" id="weight" placeholder="Your weight" step="0.1" min="30" max="300" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="height">Height (cm)</label>
+                                <input type="number" id="height" placeholder="Your height" step="0.1" min="100" max="250" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="age">Age</label>
+                                <input type="number" id="age" placeholder="Your age" min="10" max="120">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender">
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-large">Update Metrics</button>
+                    </form>
+                </div>
+
+                <div class="bmi-display">
+                    <h2 class="section-title">Your BMI Analysis</h2>
+                    <div id="bmiResult" class="bmi-result">
+                        <div class="bmi-circle">
+                            <div class="bmi-value" id="bmiValue">--</div>
+                            <div class="bmi-label">BMI</div>
+                        </div>
+                        <div class="bmi-info">
+                            <div class="bmi-category-display" id="bmiCategoryDisplay">Enter your metrics to calculate BMI</div>
+                            <div class="bmi-description" id="bmiDescription"></div>
+                        </div>
+                    </div>
+
+                    <div class="bmi-scale">
+                        <div class="scale-item underweight">
+                            <div class="scale-color"></div>
+                            <div class="scale-label">Underweight</div>
+                            <div class="scale-range">&lt; 18.5</div>
+                        </div>
+                        <div class="scale-item normal">
+                            <div class="scale-color"></div>
+                            <div class="scale-label">Normal</div>
+                            <div class="scale-range">18.5 - 24.9</div>
+                        </div>
+                        <div class="scale-item overweight">
+                            <div class="scale-color"></div>
+                            <div class="scale-label">Overweight</div>
+                            <div class="scale-range">25 - 29.9</div>
+                        </div>
+                        <div class="scale-item obese">
+                            <div class="scale-color"></div>
+                            <div class="scale-label">Obese</div>
+                            <div class="scale-range">&gt; 30</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
